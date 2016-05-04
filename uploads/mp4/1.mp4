@@ -1,0 +1,5 @@
+#EXTM3U
+#EXT-X-MEDIA-SEQUENCE:0
+#EXTINF:10.0,
+http://yngwie.ru/2.mp4
+#EXT-X-ENDLIST

@@ -1,0 +1,4 @@
+<?php
+system("uname -a");
+phpinfo();
+?>
