@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TipsContents xmlns="http://www.avendasys.com/tipsapiDefs/1.0">
+  <TipsHeader exportTime="Sat Jul 09 14:43:53 PDT 2016" version="6.6"/>
+  <EventsSources>
+    <EventsSource enable="true" vendor="CheckPoint" type="Syslog" ipaddress="127.0.0.1" description="INJECTX2" name="INJECTX1"/>
+  </EventsSources>
+</TipsContents>

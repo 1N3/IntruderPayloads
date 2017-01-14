@@ -1,0 +1,712 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TipsContents xmlns="http://www.avendasys.com/tipsapiDefs/1.0">
+  <TipsHeader exportTime="Sun Jul 10 14:00:10 PDT 2016" version="6.6"/>
+  <RadiusEnforcementServices>
+    <RadiusEnforcementService description="Authorization service for AirGroup device access" name="[AirGroup Authorization Service]" useCachedResults="false" stripUsername="false" monitor="false" enabled="true" acctProxyTargets="false" profilerEnabled="false" auditEnabled="false" postureEnabled="false">
+      <RuleExpression displayOperator="MATCHES_ALL" operator="and">
+        <AttributeList>
+          <RuleAttribute displayValue="AirGroup" value="AirGroup" operator="EQUALS" name="Called-Station-Id" type="Radius:IETF"/>
+          <RuleAttribute displayValue="Authorize-Only (17)" value="17" operator="EQUALS" name="Service-Type" type="Radius:IETF"/>
+        </AttributeList>
+      </RuleExpression>
+      <ServiceTemplate>RADIUS_ENFORCEMENT</ServiceTemplate>
+      <AuthMethodNameList>
+        <string>[Allow All MAC AUTH]</string>
+      </AuthMethodNameList>
+      <AuthSourceNameList>
+        <string>[Guest Device Repository]</string>
+      </AuthSourceNameList>
+      <RoleMappingNameList>
+        <string>[AirGroup Version Match]</string>
+      </RoleMappingNameList>
+      <EnfPolicyNameList>
+        <string>[AirGroup Enforcement Policy]</string>
+      </EnfPolicyNameList>
+    </RadiusEnforcementService>
+  </RadiusEnforcementServices>
+  <TacacsEnforcementServices>
+    <TacacsEnforcementService description="Service for access to Policy Manager Admin for network users" name="[Policy Manager Admin Network Login Service]" stripUsername="false" monitor="false" enabled="true">
+      <RuleExpression displayOperator="MATCHES_ANY" operator="OR">
+        <AttributeList>
+          <RuleAttribute displayValue="127.0.0.1" value="127.0.0.1" operator="EQUALS" name="NAD-IP-Address" type="Connection"/>
+        </AttributeList>
+      </RuleExpression>
+      <ServiceTemplate>TACACS_ENFORCEMENT</ServiceTemplate>
+      <AuthSourceNameList>
+        <string>[Local User Repository]</string>
+      </AuthSourceNameList>
+      <EnfPolicyNameList>
+        <string>[Admin Network Login Policy]</string>
+      </EnfPolicyNameList>
+    </TacacsEnforcementService>
+    <TacacsEnforcementService description="Service for access to Aruba device" name="[Aruba Device Access Service]" stripUsername="false" monitor="false" enabled="true">
+      <ServiceTemplate>TACACS_ENFORCEMENT</ServiceTemplate>
+      <AuthSourceNameList>
+        <string>[Local User Repository]</string>
+      </AuthSourceNameList>
+      <EnfPolicyNameList>
+        <string>[Aruba Device Access Policy]</string>
+      </EnfPolicyNameList>
+    </TacacsEnforcementService>
+  </TacacsEnforcementServices>
+  <AvendaAppAuthServices>
+    <AvendaAppAuthService description="Authentication service for Guest application" name="[Guest Operator Logins]" stripUsername="false" monitor="false" enabled="true">
+      <RuleExpression displayOperator="MATCHES_ALL" operator="and">
+        <AttributeList>
+          <RuleAttribute displayValue="Guest" value="Guest" operator="EQUALS" name="Name" type="Application"/>
+          <RuleAttribute displayValue="SSO" value="SSO" operator="NOT_EQUALS" name="Type" type="Authentication"/>
+        </AttributeList>
+      </RuleExpression>
+      <ServiceTemplate>AVENDA_APP_AUTH</ServiceTemplate>
+      <AuthSourceNameList>
+        <string>[Local User Repository]</string>
+        <string>[Admin User Repository]</string>
+      </AuthSourceNameList>
+      <EnfPolicyNameList>
+        <string>[Guest Operator Logins]</string>
+      </EnfPolicyNameList>
+    </AvendaAppAuthService>
+    <AvendaAppAuthService description="Authentication service for Insight application" name="[Insight Operator Logins]" stripUsername="false" monitor="false" enabled="true">
+      <RuleExpression displayOperator="MATCHES_ALL" operator="and">
+        <AttributeList>
+          <RuleAttribute displayValue="Insight" value="Insight" operator="EQUALS" name="Name" type="Application"/>
+          <RuleAttribute displayValue="SSO" value="SSO" operator="NOT_EQUALS" name="Type" type="Authentication"/>
+        </AttributeList>
+      </RuleExpression>
+      <ServiceTemplate>AVENDA_APP_AUTH</ServiceTemplate>
+      <AuthSourceNameList>
+        <string>[Local User Repository]</string>
+      </AuthSourceNameList>
+      <EnfPolicyNameList>
+        <string>[Insight Operator Logins]</string>
+      </EnfPolicyNameList>
+    </AvendaAppAuthService>
+  </AvendaAppAuthServices>
+  <AuthMethods>
+    <AuthMethod description="Default settings for Allow All MAC-AUTH" name="[Allow All MAC AUTH]" methodType="MAC-AUTH">
+      <NVPair value="true" name="allow_unknown_clients"/>
+    </AuthMethod>
+  </AuthMethods>
+  <AuthSources>
+    <AuthSource description="Authenticate guest devices against Policy Manager local database" name="[Guest Device Repository]" isAuthorizationSource="true" type="Local">
+      <NVPair value="300" name="cache_timeout"/>
+      <NVPair value="PostgreSQL" name="sql_driver"/>
+      <NVPair value="localhost" name="server"/>
+      <NVPair value="tipsdb" name="db_name"/>
+      <NVPair value="appuser" name="login"/>
+      <NVPair value="" name="password"/>
+      <NVPair value="10" name="timeout"/>
+      <Filters>
+        <Filter paramValues="" filterQuery="SELECT user_credential(password) AS User_Password,
+       CASE WHEN enabled = FALSE THEN 225
+            WHEN ((expire_time is not null AND expire_time &lt;= now())) THEN 226
+            ELSE 0
+       END AS Account_Status, sponsor_name,
+       CASE WHEN expire_time &gt; now() THEN CAST(EXTRACT(epoch FROM (expire_time - NOW())) AS INTEGER) 
+            ELSE 0
+       END AS remaining_expiration
+FROM tips_guest_users
+WHERE ((guest_type = 'DEVICE') AND (user_id = UPPER('%{Connection:Client-Mac-Address-Hyphen}')))" filterName="Authentication">
+          <Attributes>
+            <Attribute isUserAttr="false" isRole="false" attrDataType="String" aliasName="SponsorName" attrName="sponsor_name"/>
+            <Attribute isUserAttr="false" isRole="false" attrDataType="Integer" aliasName="RemainingExpiration" attrName="remaining_expiration"/>
+            <Attribute isUserAttr="false" isRole="false" attrDataType="Integer" aliasName="AccountStatus" attrName="account_status"/>
+          </Attributes>
+        </Filter>
+      </Filters>
+    </AuthSource>
+    <AuthSource description="Authenticate users against Policy Manager local user database" name="[Local User Repository]" isAuthorizationSource="true" type="Local">
+      <NVPair value="300" name="cache_timeout"/>
+      <NVPair value="PostgreSQL" name="sql_driver"/>
+      <NVPair value="localhost" name="server"/>
+      <NVPair value="6432" name="port"/>
+      <NVPair value="tipsdb" name="db_name"/>
+      <NVPair value="appuser" name="login"/>
+      <NVPair value="" name="password"/>
+      <NVPair value="10" name="timeout"/>
+      <Filters>
+        <Filter paramValues="" filterQuery="SELECT user_credential(password) AS User_Password, user_credential(password_hash) AS Password_Hash,
+				user_credential(password_ntlm_hash) AS Password_Ntlm_Hash,
+				CASE WHEN enabled = FALSE THEN 225
+				WHEN ((expire_time is not null AND expire_time &lt;= now()) OR (passwordPolicy.expiry_days &gt; 0 AND
+				(PASSWORD_UPDATED_AT &lt;= (now() - interval '1 days' * passwordPolicy.expiry_days))) ) THEN 226
+				ELSE 0
+				END AS Account_Status,
+				tips_role.name as Role_Name,
+				case when enabled=true then 'true' else 'false' end as enabled,
+                                row_to_json((SELECT d FROM (SELECT 
+                                CASE WHEN extract(DAY FROM (age(password_updated_at)))+1 &gt;= passwordPolicy.pwd_reminder_days THEN passwordPolicy.pwd_reminder_text                                ELSE '' END AS Show_Message,
+                                CASE WHEN tips_auth_local_users.change_pwd_next_login = TRUE THEN 'true' 
+                                ELSE '' END AS Change_Password)d )) as Account_Actions
+                                FROM tips_auth_local_users JOIN tips_role ON 
+				(tips_auth_local_users.user_role = tips_role.id), password_policy passwordPolicy WHERE 
+				passwordPolicy.usertype='LOCAL_USERS' AND user_id = '%{Authentication:Username}'" filterName="Authentication">
+          <Attributes>
+            <Attribute isUserAttr="true" isRole="false" attrDataType="String" aliasName="Role_Name" attrName="role_name"/>
+            <Attribute isUserAttr="true" isRole="false" attrDataType="Boolean" aliasName="Enabled" attrName="enabled"/>
+          </Attributes>
+        </Filter>
+      </Filters>
+    </AuthSource>
+    <AuthSource description="13370101010101" name="[Admin User Repository]" isAuthorizationSource="true" type="Local">
+      <NVPair value="13370101010101" name="cache_timeout"/>
+      <NVPair value="PostgreSQL" name="sql_driver"/>
+      <NVPair value="localhost" name="server"/>
+      <NVPair value="tipsdb" name="db_name"/>
+      <NVPair value="appuser" name="login"/>
+      <NVPair value="" name="password"/>
+      <NVPair value="10" name="timeout"/>
+      <Filters>
+        <Filter paramValues="" filterQuery="SELECT user_credential(password_hash) AS Password_Hash,
+                user_credential(password_ntlm_hash) AS Password_Ntlm_Hash,
+                CASE WHEN (passwordPolicy.expiry_days &gt; 0 AND (PASSWORD_UPDATED_AT &lt;= (now() - interval '1 days' * passwordPolicy.expiry_days))) -- &quot;&gt;&lt;svg/onload=alert(1)&gt;'&quot; -- - 
+                THEN 226 ELSE 0 END AS Account_Status,
+                tips_admin_user_group.name AS Role_Name
+                FROM tips_admin_user
+                JOIN tips_admin_user_group ON (tips_admin_user.group_id = tips_admin_user_group.id), password_policy passwordPolicy 
+                WHERE passwordPolicy.usertype='ADMIN_USERS' AND user_id = '%{Authentication:Username}'" filterName="Authentication">
+          <Attributes>
+            <Attribute isUserAttr="true" isRole="false" attrDataType="String" aliasName="Role_Name" attrName="role_name"/>
+          </Attributes>
+        </Filter>
+        <Filter paramValues="" filterQuery="INJECTX&quot;&gt;&lt;svg/onload=alert(1)&gt;'&quot; -- - " filterName="INJECTX&quot;&gt;&lt;svg/onload=alert(1)&gt;'&quot; -- - "/>
+      </Filters>
+    </AuthSource>
+  </AuthSources>
+  <Roles>
+    <Role description="Role for an AirGroup protocol version 1 request" name="[AirGroup v1]"/>
+    <Role description="Role for an AirGroup protocol version 2 request" name="[AirGroup v2]"/>
+    <Role description="Network administrator role for Policy Manager Admin" name="[TACACS Network Admin]"/>
+    <Role description="Super administrator role for Policy Manager Admin" name="[TACACS Super Admin]"/>
+    <Role description="Read-only administrator role for Policy Manager Admin" name="[TACACS Read-only Admin]"/>
+    <Role description="API administrator role for Policy Manager Admin" name="[TACACS API Admin]"/>
+    <Role description="Default role for root access to Aruba device" name="[Aruba TACACS root Admin]"/>
+    <Role description="Help desk role for Policy Manager Admin" name="[TACACS Help Desk]"/>
+    <Role description="Default role for read-only access to Aruba device" name="[Aruba TACACS read-only Admin]"/>
+    <Role description="Receptionist role for Policy Manager Admin" name="[TACACS Receptionist]"/>
+    <Role description="Default role for authenticated users" name="[User Authenticated]"/>
+  </Roles>
+  <RoleMappings>
+    <RoleMapping description="System-defined mapping to identify the protocol version of an AirGroup request" name="[AirGroup Version Match]" ruleCombineAlgo="first-applicable" dftRoleName="[AirGroup v1]">
+      <Policy ruleCombiningAlgorithm="first-applicable">
+        <RuleList>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ANY" operator="OR">
+                <AttributeList>
+                  <RuleAttribute displayValue="AirGroup-v2 (2)" value="2" operator="EQUALS" name="Aruba-AirGroup-Version" type="Radius:Aruba"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[AirGroup v2]" value="35" name="Role" type="Tips"/>
+            </ResultList>
+          </Rule>
+        </RuleList>
+      </Policy>
+    </RoleMapping>
+  </RoleMappings>
+  <EnforcementPolicies>
+    <EnforcementPolicy description="Enforcement policy controlling access for AirGroup devices" name="[AirGroup Enforcement Policy]" policyType="RADIUS" defaultProfileName="[AirGroup Response]">
+      <Policy ruleCombiningAlgorithm="evaluate-all">
+        <RuleList>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ALL" operator="and">
+                <AttributeList>
+                  <RuleAttribute displayValue="1" value="1" operator="EQUALS" name="airgroup_enable" type="GuestUser"/>
+                  <RuleAttribute displayValue="1" value="1" operator="EQUALS" name="airgroup_shared" type="GuestUser"/>
+                  <RuleAttribute displayValue="." value="." operator="MATCHES_REGEX" name="airgroup_shared_time" type="GuestUser"/>
+                  <RuleAttribute displayValue="0" value="0" operator="EQUALS" name="AccountStatus" type="Authorization:[Guest Device Repository]"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[AirGroup Response], [Handle AirGroup Time Sharing]" value="40,33" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ALL" operator="and">
+                <AttributeList>
+                  <RuleAttribute displayValue="1" value="1" operator="EQUALS" name="airgroup_enable" type="GuestUser"/>
+                  <RuleAttribute displayValue="1" value="1" operator="EQUALS" name="airgroup_shared" type="GuestUser"/>
+                  <RuleAttribute displayValue="." value="." operator="NOT_MATCHES_REGEX" name="airgroup_shared_time" type="GuestUser"/>
+                  <RuleAttribute displayValue="." value="." operator="MATCHES_REGEX" name="airgroup_shared_group" type="GuestUser"/>
+                  <RuleAttribute displayValue="0" value="0" operator="EQUALS" name="AccountStatus" type="Authorization:[Guest Device Repository]"/>
+                  <RuleAttribute displayValue="[AirGroup v2]" value="[AirGroup v2]" operator="EQUALS" name="Role" type="Tips"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[AirGroup Response], [AirGroup Shared Device]" value="40,42" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ALL" operator="and">
+                <AttributeList>
+                  <RuleAttribute displayValue="1" value="1" operator="EQUALS" name="airgroup_enable" type="GuestUser"/>
+                  <RuleAttribute displayValue="1" value="1" operator="EQUALS" name="airgroup_shared" type="GuestUser"/>
+                  <RuleAttribute displayValue="." value="." operator="NOT_MATCHES_REGEX" name="airgroup_shared_time" type="GuestUser"/>
+                  <RuleAttribute displayValue="." value="." operator="NOT_MATCHES_REGEX" name="airgroup_shared_group" type="GuestUser"/>
+                  <RuleAttribute displayValue="0" value="0" operator="EQUALS" name="AccountStatus" type="Authorization:[Guest Device Repository]"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[AirGroup Response], [AirGroup Shared Device]" value="40,42" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ALL" operator="and">
+                <AttributeList>
+                  <RuleAttribute displayValue="1" value="1" operator="EQUALS" name="airgroup_enable" type="GuestUser"/>
+                  <RuleAttribute displayValue="1" value="1" operator="NOT_EQUALS" name="airgroup_shared" type="GuestUser"/>
+                  <RuleAttribute displayValue="0" value="0" operator="EQUALS" name="AccountStatus" type="Authorization:[Guest Device Repository]"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[AirGroup Response], [AirGroup Personal Device]" value="40,41" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+        </RuleList>
+      </Policy>
+    </EnforcementPolicy>
+    <EnforcementPolicy description="Enforcement policy controlling access to Aruba device" name="[Aruba Device Access Policy]" policyType="TACACS" defaultProfileName="[Aruba TACACS read-only Access]">
+      <Policy ruleCombiningAlgorithm="first-applicable">
+        <RuleList>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ANY" operator="OR">
+                <AttributeList>
+                  <RuleAttribute displayValue="[Aruba TACACS root Admin]" value="[Aruba TACACS root Admin]" operator="MATCHES_ANY" name="Role" type="Tips"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[Aruba TACACS root Access]" value="20" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ANY" operator="OR">
+                <AttributeList>
+                  <RuleAttribute displayValue="[Aruba TACACS read-only Admin]" value="[Aruba TACACS read-only Admin]" operator="MATCHES_ANY" name="Role" type="Tips"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[Aruba TACACS read-only Access]" value="21" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+        </RuleList>
+      </Policy>
+    </EnforcementPolicy>
+    <EnforcementPolicy description="Enforcement policy controlling access to Policy Manager Admin" name="[Admin Network Login Policy]" policyType="TACACS" defaultProfileName="[TACACS Deny Profile]">
+      <Policy ruleCombiningAlgorithm="evaluate-all">
+        <RuleList>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ANY" operator="OR">
+                <AttributeList>
+                  <RuleAttribute displayValue="[TACACS Help Desk]" value="[TACACS Help Desk]" operator="MATCHES_ANY" name="Role" type="Tips"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[TACACS Help Desk]" value="16" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ANY" operator="OR">
+                <AttributeList>
+                  <RuleAttribute displayValue="[TACACS Network Admin]" value="[TACACS Network Admin]" operator="MATCHES_ANY" name="Role" type="Tips"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[TACACS Network Admin]" value="15" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ANY" operator="OR">
+                <AttributeList>
+                  <RuleAttribute displayValue="[TACACS Receptionist]" value="[TACACS Receptionist]" operator="MATCHES_ANY" name="Role" type="Tips"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[TACACS Receptionist]" value="17" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ANY" operator="OR">
+                <AttributeList>
+                  <RuleAttribute displayValue="[TACACS Super Admin]" value="[TACACS Super Admin]" operator="MATCHES_ANY" name="Role" type="Tips"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[TACACS Super Admin]" value="13" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ANY" operator="OR">
+                <AttributeList>
+                  <RuleAttribute displayValue="[TACACS Read-only Admin]" value="[TACACS Read-only Admin]" operator="MATCHES_ANY" name="Role" type="Tips"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[TACACS Read-only Admin]" value="18" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ANY" operator="OR">
+                <AttributeList>
+                  <RuleAttribute displayValue="[TACACS API Admin]" value="[TACACS API Admin]" operator="MATCHES_ANY" name="Role" type="Tips"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[TACACS API Admin]" value="19" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+        </RuleList>
+      </Policy>
+    </EnforcementPolicy>
+    <EnforcementPolicy description="Enforcement policy controlling access to Guest application" name="[Guest Operator Logins]" policyType="Application" defaultProfileName="[Deny Application Access Profile]">
+      <Policy ruleCombiningAlgorithm="first-applicable">
+        <RuleList>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ALL" operator="and">
+                <AttributeList>
+                  <RuleAttribute displayValue="[User Authenticated]" value="[User Authenticated]" operator="EQUALS" name="Role" type="Tips"/>
+                  <RuleAttribute displayValue="[Local User Repository]" value="[Local User Repository]" operator="EQUALS" name="Source" type="Authentication"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[Operator Login - Local Users]" value="61" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ALL" operator="and">
+                <AttributeList>
+                  <RuleAttribute displayValue="[User Authenticated]" value="[User Authenticated]" operator="EQUALS" name="Role" type="Tips"/>
+                  <RuleAttribute displayValue="[Admin User Repository]" value="[Admin User Repository]" operator="EQUALS" name="Source" type="Authentication"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[Operator Login - Admin Users]" value="62" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+        </RuleList>
+      </Policy>
+    </EnforcementPolicy>
+    <EnforcementPolicy description="Enforcement policy controlling access to Insight application" name="[Insight Operator Logins]" policyType="Application" defaultProfileName="[Deny Application Access Profile]">
+      <Policy ruleCombiningAlgorithm="first-applicable">
+        <RuleList>
+          <Rule>
+            <Condition>
+              <Expression displayOperator="MATCHES_ALL" operator="and">
+                <AttributeList>
+                  <RuleAttribute displayValue="[User Authenticated]" value="[User Authenticated]" operator="EQUALS" name="Role" type="Tips"/>
+                  <RuleAttribute displayValue="[Local User Repository]" value="[Local User Repository]" operator="EQUALS" name="Source" type="Authentication"/>
+                </AttributeList>
+              </Expression>
+            </Condition>
+            <ResultList>
+              <RuleResult displayValue="[Operator Login - Local Users]" value="61" name="Enforcement-Profile" type="Tips"/>
+            </ResultList>
+          </Rule>
+        </RuleList>
+      </Policy>
+    </EnforcementPolicy>
+  </EnforcementPolicies>
+  <RadiusEnfProfiles>
+    <RadiusEnfProfile description="System-defined profile for any AirGroup request" name="[AirGroup Response]" action="Accept">
+      <AttributeList>
+        <Attribute displayValue="AirGroup" value="AirGroup" name="Called-Station-Id" type="Radius:IETF"/>
+        <Attribute displayValue="%{Connection:Client-Mac-Address-NoDelim}" value="%{Connection:Client-Mac-Address-NoDelim}" name="Calling-Station-Id" type="Radius:IETF"/>
+        <Attribute displayValue="AirGroup-v2 (2)" value="2" name="Aruba-AirGroup-Version" type="Radius:Aruba"/>
+      </AttributeList>
+    </RadiusEnfProfile>
+    <RadiusEnfProfile description="System-defined profile for an AirGroup personal device request" name="[AirGroup Personal Device]" action="Accept">
+      <AttributeList>
+        <Attribute displayValue="Personal-Device (1)" value="1" name="Aruba-AirGroup-Device-Type" type="Radius:Aruba"/>
+        <Attribute displayValue="%{Authorization:[Guest Device Repository]:SponsorName}" value="%{Authorization:[Guest Device Repository]:SponsorName}" name="Aruba-AirGroup-User-Name" type="Radius:Aruba"/>
+        <Attribute displayValue="%{GuestUser:airgroup_shared_user}" value="%{GuestUser:airgroup_shared_user}" name="Aruba-AirGroup-Shared-User" type="Radius:Aruba"/>
+      </AttributeList>
+    </RadiusEnfProfile>
+    <RadiusEnfProfile description="System-defined profile for an AirGroup shared device request" name="[AirGroup Shared Device]" action="Accept">
+      <AttributeList>
+        <Attribute displayValue="Shared-Device (2)" value="2" name="Aruba-AirGroup-Device-Type" type="Radius:Aruba"/>
+        <Attribute displayValue="%{GuestUser:airgroup_shared_user}" value="%{GuestUser:airgroup_shared_user}" name="Aruba-AirGroup-Shared-User" type="Radius:Aruba"/>
+        <Attribute displayValue="%{GuestUser:airgroup_shared_role}" value="%{GuestUser:airgroup_shared_role}" name="Aruba-AirGroup-Shared-Role" type="Radius:Aruba"/>
+        <Attribute displayValue="%{GuestUser:airgroup_shared_location}" value="%{GuestUser:airgroup_shared_location}" name="Aruba-Location-Id" type="Radius:Aruba"/>
+        <Attribute displayValue="%{GuestUser:airgroup_shared_group}" value="%{GuestUser:airgroup_shared_group}" name="Aruba-AirGroup-Shared-Group" type="Radius:Aruba"/>
+      </AttributeList>
+    </RadiusEnfProfile>
+  </RadiusEnfProfiles>
+  <TacacsEnfProfiles>
+    <TacacsEnfProfile description="Help desk access for Policy Manager Admin" name="[TACACS Help Desk]" autzStatus="PASS_ADD" maxPrivLevel="1">
+      <ServiceNameList>
+        <string>cpass:HTTP</string>
+      </ServiceNameList>
+      <ServiceAttrList>
+        <RulesCondition valueDispName="Help Desk" value="Help Desk" oper="EQUALS" name="AdminPrivilege" type="cpass:HTTP"/>
+      </ServiceAttrList>
+    </TacacsEnfProfile>
+    <TacacsEnfProfile description="Receptionist access for Policy Manager Admin" name="[TACACS Receptionist]" autzStatus="PASS_ADD" maxPrivLevel="1">
+      <ServiceNameList>
+        <string>cpass:HTTP</string>
+      </ServiceNameList>
+      <ServiceAttrList>
+        <RulesCondition valueDispName="Receptionist" value="Receptionist" oper="EQUALS" name="AdminPrivilege" type="cpass:HTTP"/>
+      </ServiceAttrList>
+    </TacacsEnfProfile>
+    <TacacsEnfProfile description="Read-only admin access for Policy Manager Admin" name="[TACACS Read-only Admin]" autzStatus="PASS_ADD" maxPrivLevel="1">
+      <ServiceNameList>
+        <string>cpass:HTTP</string>
+      </ServiceNameList>
+      <ServiceAttrList>
+        <RulesCondition valueDispName="Read-only Administrator" value="Read-only Administrator" oper="EQUALS" name="AdminPrivilege" type="cpass:HTTP"/>
+      </ServiceAttrList>
+    </TacacsEnfProfile>
+    <TacacsEnfProfile description="API admin access for Policy Manager Admin" name="[TACACS API Admin]" autzStatus="PASS_ADD" maxPrivLevel="1">
+      <ServiceNameList>
+        <string>cpass:HTTP</string>
+      </ServiceNameList>
+      <ServiceAttrList>
+        <RulesCondition valueDispName="API Administrator" value="API Administrator" oper="EQUALS" name="AdminPrivilege" type="cpass:HTTP"/>
+      </ServiceAttrList>
+    </TacacsEnfProfile>
+    <TacacsEnfProfile description="System-defined profile for root access to Aruba device" name="[Aruba TACACS root Access]" autzStatus="PASS_ADD" maxPrivLevel="15">
+      <ServiceNameList>
+        <string>Aruba:Common</string>
+      </ServiceNameList>
+      <ServiceAttrList>
+        <RulesCondition valueDispName="root" value="root" oper="EQUALS" name="Aruba-Admin-Role" type="Aruba:Common"/>
+      </ServiceAttrList>
+    </TacacsEnfProfile>
+    <TacacsEnfProfile description="System-defined profile for read-only access to Aruba device" name="[Aruba TACACS read-only Access]" autzStatus="PASS_ADD" maxPrivLevel="15">
+      <ServiceNameList>
+        <string>Aruba:Common</string>
+      </ServiceNameList>
+      <ServiceAttrList>
+        <RulesCondition valueDispName="read-only" value="read-only" oper="EQUALS" name="Aruba-Admin-Role" type="Aruba:Common"/>
+      </ServiceAttrList>
+    </TacacsEnfProfile>
+    <TacacsEnfProfile description="System-defined profile to deny network access" name="[TACACS Deny Profile]" autzStatus="PASS_ADD" maxPrivLevel="0"/>
+    <TacacsEnfProfile description="Super admin access for Policy Manager Admin" name="[TACACS Super Admin]" autzStatus="PASS_ADD" maxPrivLevel="1">
+      <ServiceNameList>
+        <string>cpass:HTTP</string>
+      </ServiceNameList>
+      <ServiceAttrList>
+        <RulesCondition valueDispName="Super Administrator" value="Super Administrator" oper="EQUALS" name="AdminPrivilege" type="cpass:HTTP"/>
+      </ServiceAttrList>
+    </TacacsEnfProfile>
+    <TacacsEnfProfile description="Network admin access for Policy Manager Admin" name="[TACACS Network Admin]" autzStatus="PASS_ADD" maxPrivLevel="1">
+      <ServiceNameList>
+        <string>cpass:HTTP</string>
+      </ServiceNameList>
+      <ServiceAttrList>
+        <RulesCondition valueDispName="Network Administrator" value="Network Administrator" oper="EQUALS" name="AdminPrivilege" type="cpass:HTTP"/>
+      </ServiceAttrList>
+    </TacacsEnfProfile>
+  </TacacsEnfProfiles>
+  <GenericEnfProfiles>
+    <GenericEnfProfile description="System-defined profile to send time-based sharing policy to the AirGroup notification service" name="[Handle AirGroup Time Sharing]" action="Accept" type="HTTP">
+      <ProfileParams displayValue="localhost" value="localhost" name="TargetServer"/>
+      <ProfileParams displayValue="Handle AirGroup Time Sharing" value="Handle AirGroup Time Sharing (Generic HTTP)" name="Action"/>
+    </GenericEnfProfile>
+    <GenericEnfProfile description="Enforcement profile for Guest operator logins" name="[Operator Login - Local Users]" action="Accept" type="Application">
+      <ProfileParams displayValue="%{Authorization:[Local User Repository]:Role_Name}" value="%{Authorization:[Local User Repository]:Role_Name}" name="admin_privileges"/>
+    </GenericEnfProfile>
+    <GenericEnfProfile description="Enforcement profile for Guest admin logins" name="[Operator Login - Admin Users]" action="Accept" type="Application">
+      <ProfileParams displayValue="%{Authorization:[Admin User Repository]:Role_Name}" value="%{Authorization:[Admin User Repository]:Role_Name}" name="admin_privileges"/>
+    </GenericEnfProfile>
+    <GenericEnfProfile description="System-defined profile to deny access to application" name="[Deny Application Access Profile]" action="Reject" type="Application"/>
+  </GenericEnfProfiles>
+  <AdminPrivileges>
+    <AdminPrivilege allowPasswords="true" accessType="FULL" name="Super Administrator" description="A super administrator is allowed read/write access to all configuration elements">
+      <AdminTask taskid="con">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="dnd">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="mon">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="sc">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="adm">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <InsightTask privilege="RWD" taskId="insight_reports"/>
+      <InsightTask privilege="RWD" taskId="insight_dashboard"/>
+      <InsightTask privilege="RWD" taskId="insight_alerts"/>
+      <InsightTask privilege="RWD" taskId="insight_administration"/>
+    </AdminPrivilege>
+    <AdminPrivilege allowPasswords="true" accessType="FULL" name="Network Administrator" description="A network administrator is allowed to configure all the policies in the system">
+      <AdminTask taskid="con">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="dnd">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="mon">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <InsightTask privilege="RWD" taskId="insight_reports"/>
+      <InsightTask privilege="RWD" taskId="insight_dashboard"/>
+      <InsightTask privilege="RWD" taskId="insight_alerts"/>
+    </AdminPrivilege>
+    <AdminPrivilege allowPasswords="true" accessType="FULL" name="Help Desk" description="A help desk person logs in to troubleshoot problems reported by end users">
+      <AdminTask taskid="mon.li.ag">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="mon.li.ad">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="mon.li.ac">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="mon.li.sp">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="mon.li.sy">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <InsightTask privilege="R" taskId="insight_reports"/>
+      <InsightTask privilege="R" taskId="insight_dashboard"/>
+      <InsightTask privilege="R" taskId="insight_alerts"/>
+    </AdminPrivilege>
+    <AdminPrivilege allowPasswords="true" accessType="FULL" name="Receptionist" description="A receptionist is allowed access to main monitoring screens">
+      <AdminTask taskid="mon.li.ag">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="mon.li.ad">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="mon.li.ac">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="mon.li.sp">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="mon.li.sy">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <InsightTask privilege="R" taskId="insight_reports"/>
+      <InsightTask privilege="R" taskId="insight_dashboard"/>
+    </AdminPrivilege>
+    <AdminPrivilege allowPasswords="false" accessType="FULL" name="Read-only Administrator" description="A read-only administrator is only allowed to read  all configuration elements">
+      <AdminTask taskid="con">
+        <AdminTaskAction type="R"/>
+      </AdminTask>
+      <AdminTask taskid="dnd">
+        <AdminTaskAction type="R"/>
+      </AdminTask>
+      <AdminTask taskid="mon">
+        <AdminTaskAction type="R"/>
+      </AdminTask>
+      <AdminTask taskid="sc">
+        <AdminTaskAction type="R"/>
+      </AdminTask>
+      <AdminTask taskid="adm">
+        <AdminTaskAction type="R"/>
+      </AdminTask>
+      <InsightTask privilege="R" taskId="insight_reports"/>
+      <InsightTask privilege="R" taskId="insight_dashboard"/>
+      <InsightTask privilege="R" taskId="insight_alerts"/>
+      <InsightTask privilege="R" taskId="insight_administration"/>
+    </AdminPrivilege>
+    <AdminPrivilege allowPasswords="true" accessType="API" name="API Administrator" description="An API administrator is only allowed API access to read/write all configuration elements">
+      <AdminTask taskid="con">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="dnd">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="mon">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="sc">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+      <AdminTask taskid="adm">
+        <AdminTaskAction type="RWD"/>
+      </AdminTask>
+    </AdminPrivilege>
+  </AdminPrivileges>
+  <TagDictionaries>
+    <TagDictionary allowMultiple="false" mandatory="false" dataType="String" attributeName="do_expire" entityName="GuestUser"/>
+    <TagDictionary allowMultiple="false" mandatory="false" dataType="String" attributeName="expire_postlogin" entityName="GuestUser"/>
+    <TagDictionary allowMultiple="false" mandatory="false" dataType="String" attributeName="sponsor_profile_name" entityName="GuestUser"/>
+    <TagDictionary allowMultiple="false" mandatory="false" dataType="String" attributeName="Visitor Name" entityName="GuestUser"/>
+    <TagDictionary allowMultiple="false" mandatory="false" dataType="String" attributeName="source" entityName="GuestUser"/>
+    <TagDictionary allowMultiple="false" mandatory="false" dataType="String" attributeName="remote_addr" entityName="GuestUser"/>
+    <TagDictionary allowMultiple="false" mandatory="false" dataType="String" attributeName="expired_notify_status" entityName="GuestUser"/>
+    <TagDictionary allowMultiple="false" mandatory="false" dataType="String" attributeName="simultaneous_use" entityName="GuestUser"/>
+    <TagDictionary allowMultiple="false" mandatory="false" dataType="String" attributeName="Create Time" entityName="GuestUser"/>
+    <TagDictionary allowMultiple="false" mandatory="false" dataType="String" attributeName="expire_usage" entityName="GuestUser"/>
+  </TagDictionaries>
+  <ContextServers>
+    <ContextServer bypassProxy="true" enableServer="true" validateServer="false" password="" username="" baseUrl="https://localhost" type="HTTP" server="localhost"/>
+  </ContextServers>
+  <ContextServerActions>
+    <ContextServerAction content="version=1##NEWLINE##mac=%{Connection:Client-Mac-Address-NoDelim}##NEWLINE##airgroup_enable=%{GuestUser:airgroup_enable}##NEWLINE##airgroup_shared=%{GuestUser:airgroup_shared}##NEWLINE##airgroup_device_owner=##NEWLINE##airgroup_shared_group=%{GuestUser:airgroup_shared_group}##NEWLINE##airgroup_shared_location=%{GuestUser:airgroup_shared_location}##NEWLINE##airgroup_shared_role=%{GuestUser:airgroup_shared_role}##NEWLINE##airgroup_shared_user=%{GuestUser:airgroup_shared_user}##NEWLINE##airgroup_shared_time=%{GuestUser:airgroup_shared_time}" contentType="PLAIN" url="/guest/airgroup_endpoint_context_server.php" disableBasicAuth="false" method="POST" description="Sends time-based sharing policy to the AirGroup notification service" serverName="localhost" action="Handle AirGroup Time Sharing" type="HTTP">
+      <Headers value="text/plain" name="Content-Type"/>
+    </ContextServerAction>
+    <ContextServerAction url="/async_netd/deviceprofiler/nmap?timeout=%{TIMEOUT}&amp;host=%{IPADDRESS}" disableBasicAuth="false" method="POST" description="contextServerAction.nmapScan" serverName="localhost" action="Nmap Scan" type="HTTP">
+      <Headers value="application/json" name="Accept"/>
+    </ContextServerAction>
+    <ContextServerAction content="{ &amp;quot;mac&amp;quot;: &amp;quot;%{Connection:Client-Mac-Address-NoDelim}&amp;quot;,&amp;quot;nmap&amp;quot;: {&amp;quot;device&amp;quot;: &amp;quot;%{DEVICECATEGORY}&amp;quot;}}" contentType="JSON" url="/async_netd/deviceprofiler/endpoints" disableBasicAuth="false" method="POST" description="contextServerAction.nmapScanDeviceProfiler" serverName="localhost" action="Nmap Scan Device Profiler" type="HTTP">
+      <Headers value="application/json" name="Content-Type"/>
+    </ContextServerAction>
+    <ContextServerAction content="{&amp;quot;shared-secret&amp;quot;: &amp;quot;%{shared-secret}&amp;quot;,&amp;quot;user&amp;quot;: &amp;quot;%{name}&amp;quot;,&amp;quot;ip-address&amp;quot;: &amp;quot;%{ip}&amp;quot;,&amp;quot;machine&amp;quot;: &amp;quot;%{machine}&amp;quot;,&amp;quot;domain&amp;quot;:&amp;quot;%{domain}&amp;quot;,&amp;quot;identity-source&amp;quot;: &amp;quot;Aruba ClearPass Policy Manager&amp;quot;,&amp;quot;session-timeout&amp;quot;: %{timeout},&amp;quot;calculate-roles&amp;quot;:1,&amp;quot;fetch-user-groups&amp;quot;: 1,&amp;quot;fetch-machine-groups&amp;quot;:1}" contentType="JSON" url="/_IA_MU_Agent/idasdk/add-identity" disableBasicAuth="false" method="POST" description="Inform Check Point that user logged in." serverName="localhost" action="Check Point Login - AD User" type="HTTP">
+      <Attributes value="" name="%{shared-secret}"/>
+      <Attributes value="28800" name="%{timeout}"/>
+      <Headers value="application/json" name="Content-Type"/>
+    </ContextServerAction>
+    <ContextServerAction content="{&amp;quot;shared-secret&amp;quot;: &amp;quot;%{shared-secret}&amp;quot;,&amp;quot;ip-address&amp;quot;: &amp;quot;%{ip}&amp;quot;}" contentType="JSON" url="/_IA_MU_Agent/idasdk/delete-identity" disableBasicAuth="false" method="POST" description="Inform Check Point that user logged out." serverName="localhost" action="Check Point Logout" type="HTTP">
+      <Attributes value="" name="%{shared-secret}"/>
+      <Headers value="application/json" name="Content-Type"/>
+    </ContextServerAction>
+    <ContextServerAction content="{&amp;quot;event&amp;quot;:&amp;quot;1&amp;quot;,&amp;quot;username&amp;quot;:&amp;quot;%{name}&amp;quot;,&amp;quot;user_ip&amp;quot;:&amp;quot;%{ip}&amp;quot;}" contentType="JSON" url="/api/v1/ssoauth/" disableBasicAuth="false" method="POST" description="Inform Fortinet that user logged in." serverName="localhost" action="Fortinet Login" type="HTTP">
+      <Headers value="application/json" name="Content-Type"/>
+    </ContextServerAction>
+    <ContextServerAction content="{&amp;quot;event&amp;quot;:&amp;quot;0&amp;quot;,&amp;quot;username&amp;quot;:&amp;quot;%{name}&amp;quot;,&amp;quot;user_ip&amp;quot;:&amp;quot;%{ip}&amp;quot;}" contentType="JSON" url="/api/v1/ssoauth/" disableBasicAuth="false" method="POST" description="Inform Fortinet that user logged out." serverName="localhost" action="Fortinet Logout" type="HTTP">
+      <Headers value="application/json" name="Content-Type"/>
+    </ContextServerAction>
+    <ContextServerAction url="/networkservices/snmpservice/HostQuery?ip=%{ip}" disableBasicAuth="false" method="GET" description="contextServerAction.snmpScan" serverName="localhost" action="SNMP Scan" type="HTTP">
+      <Headers value="application/json" name="Content-Type"/>
+    </ContextServerAction>
+    <ContextServerAction content="{&amp;quot;filter&amp;quot;:&amp;quot;ClearPass&amp;quot;, &amp;quot;mac&amp;quot;:&amp;quot;%{Connection:Client-Mac-Address-Colon}&amp;quot;, &amp;quot;username&amp;quot;:&amp;quot;%{Authentication:Full-Username}&amp;quot;, &amp;quot;expiration_time&amp;quot;:&amp;quot;21600&amp;quot;}" contentType="JSON" url="/wapi/v2.0/macfilteraddress?" disableBasicAuth="false" method="POST" description="This is the Endpoint Context Server Action to send user or device context to Infoblox server" serverName="localhost" action="Infoblox Login" type="HTTP">
+      <Headers value="application/json" name="Content-Type"/>
+    </ContextServerAction>
+    <ContextServerAction content="{&amp;quot;shared-secret&amp;quot;: &amp;quot;%{shared-secret}&amp;quot;,&amp;quot;user&amp;quot;: &amp;quot;%{name}&amp;quot;,&amp;quot;ip-address&amp;quot;: &amp;quot;%{ip}&amp;quot;,&amp;quot;machine&amp;quot;: &amp;quot;%{machine}&amp;quot;,&amp;quot;identity-source&amp;quot;: &amp;quot;Aruba ClearPass Policy Manager&amp;quot;,&amp;quot;session-timeout&amp;quot;: %{timeout},&amp;quot;user-groups&amp;quot;: %{user-groups},&amp;quot;machine-groups&amp;quot;: %{machine-groups},&amp;quot;roles&amp;quot;: %{roles},&amp;quot;fetch-user-groups&amp;quot;: 0,&amp;quot;fetch-machine-groups&amp;quot;:0}" contentType="JSON" url="/_IA_MU_Agent/idasdk/add-identity" disableBasicAuth="false" method="POST" description="Inform Check Point that user logged in." serverName="localhost" action="Check Point Login - Guest User" type="HTTP">
+      <Attributes value="" name="%{shared-secret}"/>
+      <Attributes value="28800" name="%{timeout}"/>
+      <Attributes value="[&quot;aruba-guest&quot;]" name="%{user-groups}"/>
+      <Attributes value="[&quot;aruba-guest-machine&quot;]" name="%{machine-groups}"/>
+      <Attributes value="[]" name="%{roles}"/>
+      <Headers value="application/json" name="Content-Type"/>
+    </ContextServerAction>
+  </ContextServerActions>
+</TipsContents>

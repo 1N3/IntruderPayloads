@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TipsContents xmlns="http://www.avendasys.com/tipsapiDefs/1.0">
+  <TipsHeader exportTime="Sat Jul 09 15:07:17 PDT 2016" version="6.6"/>
+  <Proxies>
+    <Proxy description="injectx.crowdshield.com" name="injectx.crowdshield.com" secret="" acctPort="3000" authPort="3000" hostName="injectx.crowdshield.com"/>
+  </Proxies>
+</TipsContents>
