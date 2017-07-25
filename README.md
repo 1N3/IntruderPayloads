@@ -16,7 +16,7 @@ Author: 1N3@CrowdShield https://crowdshield.com
 - Burpsuite Spider with intelligent form submission
 - Manual crawl of website through Burpsuite proxy and submitting INJECTX payloads for tracking
 - Burpsuite passive scan
-- Burpsuiet engagement tools > Search > ```<form|<input|url=|path=|load=|INJECTX|Found|<!--|Exception|Query|ORA|SQL|error|Location|crowdshield|xerosecurity|username|password|document\.|location\.|eval\(|exec\(|\?wsdl|\.wsdl```
+- Burpsuite engagement tools > Search > ```<form|<input|url=|path=|load=|INJECTX|Found|<!--|Exception|Query|ORA|SQL|error|Location|crowdshield|xerosecurity|username|password|document\.|location\.|eval\(|exec\(|\?wsdl|\.wsdl```
 - Burpsuite engagement tools > Find comments
 - Burpsuite engagement tools > Find scripts
 - Burpsuite engagement tools > Find references
