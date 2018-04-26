@@ -120,7 +120,7 @@ en%0AContent-Length%3A%200%0A%0AHTTP%2F1.1%20200%20OK%0AContent-Type%3A%20text%2
 sleep 5; sleep 5 || sleep 5 | sleep 5 & sleep 5 && sleep 5
 admin" or "1"="1"-- 
 admin' or '1'='1'-- 
-firstlastcompany%0a%0d%00
+INJECTX%0a%0d%00
 ```
 
 
