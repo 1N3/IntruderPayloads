@@ -1,11 +1,11 @@
 ![alt tag](https://github.com/1N3/IntruderPayloads/blob/master/BurpsuiteIntruderPayloads.png)
 
 # IntruderPayloads
-A collection of Burpsuite Intruder payloads and fuzz lists and pentesting methodology. To pull down all 3rd party repos, run install.sh in the same directory of the IntruderPayloads folder.
+A collection of Burpsuite Intruder payloads, BurpBounty payloads, fuzz lists and pentesting methodologies. To pull down all 3rd party repos, run install.sh in the same directory of the IntruderPayloads folder.
 
 Any comments or feedback/changes/improvements are welcome!
 
-Author: 1N3@CrowdShield https://crowdshield.com
+Author: xer0dayz@xerosecurity.com - https://xerosecurity.com
 
 ## LICENSE:
 This software is free to distribute, modify and use with the condition that credit is provided to the creator (1N3@CrowdShield) and is not for commercial use.
