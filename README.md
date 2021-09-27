@@ -3,7 +3,7 @@
 # IntruderPayloads
 A collection of Burpsuite Intruder payloads, BurpBounty payloads (https://github.com/wagiro/BurpBounty), fuzz lists and pentesting methodologies. To pull down all 3rd party repos, run install.sh in the same directory of the IntruderPayloads folder.
 
-Author: xer0dayz@xerosecurity.com - https://xerosecurity.com
+Author: xer0dayz@sn1persecurity.com - https://sn1persecurity.com
 
 ### OWASP TESTING CHECKLIST:
 -----------------------------------------------------------------------

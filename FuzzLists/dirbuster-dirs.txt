@@ -57989,8 +57989,8 @@ xenon
 xenu
 xeon
 xerces-j
-xerox
-Xerox
+sn1perx
+Sn1perx
 xfactor
 xfce
 xfe
